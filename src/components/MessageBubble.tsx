@@ -1,4 +1,5 @@
 import type { CacheEntry } from '../api/types'
+import { decodeHtmlEntities } from '../utils/decodeHtmlEntities'
 import { formatTimestamp } from '../utils/formatTimestamp'
 
 interface MessageBubbleProps {
@@ -23,7 +24,7 @@ export function MessageBubble({ entry, isMine, onRetry }: MessageBubbleProps) {
           {status === 'error' && ', failed to send'}
         </span>
         {!isMine && <p className="text-sm font-medium text-muted">{entry.author}</p>}
-        <p className="font-semibold">{entry.message}</p>
+        <p className="font-semibold">{decodeHtmlEntities(entry.message)}</p>
         <p className={`mt-1 text-xs text-muted ${isMine ? 'text-right' : ''}`}>
           {formatTimestamp(entry.createdAt)}
         </p>

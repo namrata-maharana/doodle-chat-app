@@ -15,5 +15,7 @@ export function useMessagesQuery() {
       const fetched = await fetchMessages(after ? { after } : { limit: 50 }, signal)
       return mergeMessages(existing, fetched)
     },
+    refetchInterval: 4000,
+    refetchIntervalInBackground: false,
   })
 }
