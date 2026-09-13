@@ -1,10 +1,20 @@
+import { useQueryClient } from '@tanstack/react-query'
+
+import type { CacheEntry, PendingMessage } from '../api/types'
 import doodleBg from '../assets/doodle-bg.webp'
 import { useMessagesQuery } from '../hooks/useMessagesQuery'
+import { useSendMessage } from '../hooks/useSendMessage'
 import { MessageBubble } from './MessageBubble'
 import { StatusBanner } from './StatusBanner'
 
-export function MessageList() {
+interface MessageListProps {
+  authorName: string | null
+}
+
+export function MessageList({ authorName }: MessageListProps) {
   const { data, isPending, isError, refetch } = useMessagesQuery()
+  const queryClient = useQueryClient()
+  const sendMessage = useSendMessage()
 
   if (isPending) {
     return <StatusBanner variant="loading" />
@@ -18,6 +28,13 @@ export function MessageList() {
     return <StatusBanner variant="empty" />
   }
 
+  function handleRetry(entry: PendingMessage) {
+    queryClient.setQueryData<CacheEntry[]>(['messages'], (current = []) =>
+      current.filter((item) => !('clientId' in item && item.clientId === entry.clientId)),
+    )
+    sendMessage.mutate({ message: entry.message, author: entry.author })
+  }
+
   return (
     <main
       role="log"
@@ -26,8 +43,15 @@ export function MessageList() {
       className="flex-1 space-y-3 overflow-y-auto bg-repeat px-6 py-4"
       style={{ backgroundImage: `url(${doodleBg})` }}
     >
-      {data.map((message) => (
-        <MessageBubble key={message._id} message={message} isMine={false} />
+      {data.map((entry) => (
+        <MessageBubble
+          key={'clientId' in entry ? entry.clientId : entry._id}
+          entry={entry}
+          isMine={entry.author === authorName}
+          onRetry={
+            'clientId' in entry && entry.status === 'error' ? () => handleRetry(entry) : undefined
+          }
+        />
       ))}
     </main>
   )

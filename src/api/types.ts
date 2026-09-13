@@ -5,6 +5,16 @@ export interface Message {
   createdAt: string
 }
 
+export interface PendingMessage {
+  clientId: string
+  author: string
+  message: string
+  createdAt: string
+  status: 'pending' | 'error'
+}
+
+export type CacheEntry = Message | PendingMessage
+
 export interface NewMessagePayload {
   message: string
   author: string
