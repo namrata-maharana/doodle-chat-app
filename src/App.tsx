@@ -1,4 +1,7 @@
+import { ChatWindow } from './components/ChatWindow'
+
 function App() {
-  return <p>Doodle Chat</p>
+  return <ChatWindow />
 }
+
 export default App
