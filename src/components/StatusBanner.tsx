@@ -13,11 +13,22 @@ const messages: Record<StatusBannerVariant, string> = {
 }
 
 export function StatusBanner({ variant, onRetry }: StatusBannerProps) {
+  if (variant === 'reconnecting') {
+    return (
+      <div role="status" className="border-b border-slate-200 bg-slate-50 p-2 text-center text-sm text-muted">
+        {messages.reconnecting}
+      </div>
+    )
+  }
+
   return (
-    <div role={variant === 'error' ? 'alert' : 'status'} className="p-6 text-center text-muted">
+    <div
+      role={variant === 'error' ? 'alert' : 'status'}
+      className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center text-muted"
+    >
       <p>{messages[variant]}</p>
       {onRetry && (
-        <button type="button" onClick={onRetry} className="mt-2 underline">
+        <button type="button" onClick={onRetry} className="underline">
           Try again
         </button>
       )}

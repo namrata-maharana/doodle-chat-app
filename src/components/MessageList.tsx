@@ -20,11 +20,10 @@ export function MessageList({ authorName }: MessageListProps) {
     return <StatusBanner variant="loading" />
   }
 
-  if (isError) {
-    return <StatusBanner variant="error" onRetry={() => refetch()} />
-  }
-
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
+    if (isError) {
+      return <StatusBanner variant="error" onRetry={() => refetch()} />
+    }
     return <StatusBanner variant="empty" />
   }
 
@@ -36,23 +35,27 @@ export function MessageList({ authorName }: MessageListProps) {
   }
 
   return (
-    <main
-      role="log"
-      aria-live="polite"
-      aria-label="Conversation"
-      className="flex-1 space-y-3 overflow-y-auto bg-repeat px-6 py-4"
-      style={{ backgroundImage: `url(${doodleBg})` }}
-    >
-      {data.map((entry) => (
-        <MessageBubble
-          key={'clientId' in entry ? entry.clientId : entry._id}
-          entry={entry}
-          isMine={entry.author === authorName}
-          onRetry={
-            'clientId' in entry && entry.status === 'error' ? () => handleRetry(entry) : undefined
-          }
-        />
-      ))}
-    </main>
+    <>
+      {isError && <StatusBanner variant="reconnecting" />}
+      <main
+        className="flex-1 overflow-y-auto bg-repeat px-6 py-4"
+        style={{ backgroundImage: `url(${doodleBg})` }}
+      >
+        <div role="log" aria-live="polite" aria-label="Conversation" className="space-y-3">
+          {data.map((entry) => (
+            <MessageBubble
+              key={'clientId' in entry ? entry.clientId : entry._id}
+              entry={entry}
+              isMine={entry.author === authorName}
+              onRetry={
+                'clientId' in entry && entry.status === 'error'
+                  ? () => handleRetry(entry)
+                  : undefined
+              }
+            />
+          ))}
+        </div>
+      </main>
+    </>
   )
 }

@@ -12,4 +12,10 @@ describe('decodeHtmlEntities', () => {
   it('leaves plain text unchanged', () => {
     expect(decodeHtmlEntities("Can't wait for the lunch!")).toBe("Can't wait for the lunch!")
   })
+
+  it('does not strip literal angle brackets a user actually typed', () => {
+    expect(decodeHtmlEntities('5 < 10 > 2, and <b>not bold</b>')).toBe(
+      '5 < 10 > 2, and <b>not bold</b>',
+    )
+  })
 })

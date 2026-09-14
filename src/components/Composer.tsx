@@ -19,6 +19,7 @@ export function Composer({ authorName }: ComposerProps) {
     const validationError = validateMessageText(text)
     if (validationError) {
       setError(validationError)
+      inputRef.current?.focus()
       return
     }
 
@@ -29,7 +30,7 @@ export function Composer({ authorName }: ComposerProps) {
   }
 
   return (
-    <div className="bg-composer p-4">
+    <footer className="bg-composer p-4">
       <form onSubmit={handleSubmit} className="flex items-center gap-2">
         <label htmlFor="message-input" className="sr-only">
           Message
@@ -53,6 +54,6 @@ export function Composer({ authorName }: ComposerProps) {
           {error}
         </p>
       )}
-    </div>
+    </footer>
   )
 }

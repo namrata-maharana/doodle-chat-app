@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { validateAuthor } from '../utils/validation'
 
@@ -9,6 +9,7 @@ interface AuthorPromptProps {
 export function AuthorPrompt({ onSubmit }: AuthorPromptProps) {
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -16,6 +17,7 @@ export function AuthorPrompt({ onSubmit }: AuthorPromptProps) {
     const validationError = validateAuthor(name)
     if (validationError) {
       setError(validationError)
+      inputRef.current?.focus()
       return
     }
 
@@ -23,13 +25,14 @@ export function AuthorPrompt({ onSubmit }: AuthorPromptProps) {
   }
 
   return (
-    <div className="bg-composer p-4">
+    <footer className="bg-composer p-4">
       <form onSubmit={handleSubmit} className="flex items-center gap-2">
         <label htmlFor="author-name" className="sr-only">
           Your name
         </label>
         <input
           id="author-name"
+          ref={inputRef}
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="Message"
@@ -47,6 +50,6 @@ export function AuthorPrompt({ onSubmit }: AuthorPromptProps) {
           {error}
         </p>
       )}
-    </div>
+    </footer>
   )
 }
