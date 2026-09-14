@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { Message, PendingMessage } from '../api/types'
-import { isConfirmedMessage, mergeMessages } from '../utils/mergeMessages'
+import { isConfirmedMessage, mergeMessages, prependOlderMessages } from '../utils/mergeMessages'
 
 function makeMessage(overrides: Partial<Message> = {}): Message {
   return {
@@ -68,5 +68,23 @@ describe('mergeMessages', () => {
     const result = mergeMessages(existing, fetched)
 
     expect(result).toHaveLength(2)
+  })
+})
+
+describe('prependOlderMessages', () => {
+  it('puts older messages before the existing ones, in createdAt order', () => {
+    const existing = [makeMessage({ _id: '2', createdAt: '2024-01-01T00:01:00.000Z' })]
+    const older = [makeMessage({ _id: '1', createdAt: '2024-01-01T00:00:00.000Z' })]
+
+    const result = prependOlderMessages(existing, older)
+
+    expect(result.map((entry) => isConfirmedMessage(entry) && entry._id)).toEqual(['1', '2'])
+  })
+
+  it('does not duplicate an older message that is already cached', () => {
+    const existing = [makeMessage({ _id: '1', createdAt: '2024-01-01T00:00:00.000Z' })]
+    const older = [makeMessage({ _id: '1', createdAt: '2024-01-01T00:00:00.000Z' })]
+
+    expect(prependOlderMessages(existing, older)).toHaveLength(1)
   })
 })

@@ -33,3 +33,10 @@ export function mergeMessages(existing: CacheEntry[], fetched: Message[]): Cache
     a.createdAt.localeCompare(b.createdAt),
   )
 }
+
+export function prependOlderMessages(existing: CacheEntry[], older: Message[]): CacheEntry[] {
+  const existingIds = new Set(existing.filter(isConfirmedMessage).map((message) => message._id))
+  const newOlder = older.filter((message) => !existingIds.has(message._id))
+
+  return [...newOlder, ...existing].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+}
