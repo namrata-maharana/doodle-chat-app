@@ -34,6 +34,17 @@ npm run dev
 - `npm run lint` - run ESLint
 - `npm test` - run the test suite
 
+## Running it with Docker
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Served by `serve` at `http://localhost:8080`.
+
+Heads up: `VITE_API_BASE_URL` and `VITE_API_TOKEN` get baked into the JS bundle at build time, not read at container startup - that's why they're passed as build args in `docker-compose.yml` instead of `environment:`. Change either one and you'll need to rebuild.
+
 ## How it works
 
 - `src/api` - a small typed fetch wrapper for the two backend endpoints.
