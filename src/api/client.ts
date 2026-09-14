@@ -2,6 +2,7 @@ import { ApiError } from './types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 const TOKEN = import.meta.env.VITE_API_TOKEN
+const REQUEST_TIMEOUT_MS = 10_000
 
 function extractErrorMessage(body: unknown, fallback: string): string {
   if (
@@ -20,8 +21,12 @@ function extractErrorMessage(body: unknown, fallback: string): string {
 }
 
 export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const timeoutSignal = AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+  const signal = init.signal ? AbortSignal.any([init.signal, timeoutSignal]) : timeoutSignal
+
   const response = await fetch(`${BASE_URL}${path}`, {
     ...init,
+    signal,
     headers: {
       Authorization: `Bearer ${TOKEN}`,
       'Content-Type': 'application/json',
