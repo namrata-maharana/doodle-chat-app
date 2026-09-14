@@ -5,7 +5,10 @@ const authorSchema = z
   .trim()
   .min(1, 'Name is required')
   .max(50, 'Name must be 50 characters or fewer')
-  .regex(/^[\w\s-]+$/, 'Name can only contain letters, numbers, spaces, hyphens and underscores')
+  .regex(
+    /^[\p{L}\p{N}_\s-]+$/u,
+    'Name can only contain letters, numbers, spaces, hyphens and underscores',
+  )
 
 const messageSchema = z
   .string()
