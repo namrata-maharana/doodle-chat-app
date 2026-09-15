@@ -13,11 +13,23 @@ A chat UI for the Doodle frontend challenge - sends and displays messages agains
 
 ## Running it
 
-Make sure the chat API backend is running locally (`docker compose up` in that repo), then create a `.env` file in the project root:
+Make sure the chat API backend is running first (see that repo's README).
 
+### Option 1: Docker (recommended)
+
+```bash
+cp .env.example .env
+docker compose up --build
 ```
-VITE_API_BASE_URL=http://localhost:3000
-VITE_API_TOKEN=super-secret-doodle-token
+
+Served by `serve` at `http://localhost:8080`.
+
+Heads up: `VITE_API_BASE_URL` and `VITE_API_TOKEN` get baked into the JS bundle at build time, not read at container startup - that's why they're passed as build args in `docker-compose.yml` instead of `environment:`. Change either one and you'll need to rebuild.
+
+### Option 2: Local Development (Without Docker)
+
+```bash
+cp .env.example .env
 ```
 
 Install deps and start the dev server:
@@ -34,27 +46,17 @@ npm run dev
 - `npm run lint` - run ESLint
 - `npm test` - run the test suite
 
-## Running it with Docker
-
-```bash
-cp .env.example .env
-docker compose up --build
-```
-
-Served by `serve` at `http://localhost:8080`.
-
-Heads up: `VITE_API_BASE_URL` and `VITE_API_TOKEN` get baked into the JS bundle at build time, not read at container startup - that's why they're passed as build args in `docker-compose.yml` instead of `environment:`. Change either one and you'll need to rebuild.
-
 ## How it works
 
-- `src/api` - a small typed fetch wrapper for the two backend endpoints.
-- `src/hooks/useMessagesQuery.ts` - fetches messages and polls for new ones every 4 seconds.
-- `src/hooks/useSendMessage.ts` - sends a message optimistically: it appears instantly, gets replaced once the server confirms it, or gets marked as failed with a retry option if the request errors.
-- `src/utils/mergeMessages.ts` - keeps the list correct when a poll and an optimistic send land around the same time, so a message you just sent doesn't briefly show up twice.
-- There's no login. The first time you send a message you're asked for a display name, saved in `localStorage`, used to tell your own messages apart from everyone else's.
+- `src/api` - just a thin fetch wrapper around the two endpoints the backend gives us.
+- `src/hooks/useMessagesQuery.ts` - grabs the messages and polls every 4s for new ones.
+- `src/hooks/useSendMessage.ts` - handles sending optimistically. The message shows up right away, then either gets swapped for the real one once the server responds, or flagged as failed with a retry button if it didn't go through.
+- `src/hooks/useLoadOlderMessages.ts` - loads more history when you scroll up near the top.
+- `src/components/MessageList.tsx` - uses `@tanstack/react-virtual` to only render what's actually visible, so the list stays fast no matter how long the chat gets.
+- `src/utils/mergeMessages.ts` - the messy part - stitches together polling, pagination, and optimistic sends without duplicating or reshuffling anything.
+- No real login, just a name prompt the first time you send a message. It gets saved to `localStorage` so the app knows which messages are "yours".
 
 ## Known limitations
 
-- No real auth, so two people picking the same display name will see each other's messages as their own. Fine for a nameless chatroom, not fine for anything real.
-- No pagination yet - loads the latest 50 messages and polls for new ones; older history isn't fetchable from the UI.
-- Polls every 4 seconds instead of using a websocket, since the API doesn't offer one.
+- Since there's no real auth, if two people use the same display name they'll each think the other's messages are their own. Good enough for a throwaway chatroom, not for anything that actually matters.
+- Uses polling instead of a websocket, mostly because the API doesn't give us one to work with.
