@@ -12,10 +12,14 @@ export function useMessagesQuery() {
     queryFn: async ({ signal }) => {
       const existing = queryClient.getQueryData<CacheEntry[]>(['messages']) ?? []
       const after = existing.filter(isConfirmedMessage).at(-1)?.createdAt
-      const fetched = await fetchMessages(after ? { after } : { limit: 50 }, signal)
+      const fetched = after
+        ? await fetchMessages({ after, limit: 50 }, signal)
+        : await fetchMessages({ before: new Date().toISOString(), limit: 50 }, signal)
       return mergeMessages(existing, fetched)
     },
     refetchInterval: 4000,
     refetchIntervalInBackground: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 }
